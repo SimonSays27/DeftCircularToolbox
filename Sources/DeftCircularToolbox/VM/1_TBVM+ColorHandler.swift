@@ -4,7 +4,7 @@ import DeftCore
 /** Selectable Handler */
 extension ToolboxViewModel {
     public class SelectableHandler {
-        @discardableResult func select(_ container: Container, id: String) -> Tool? { return nil }
+        @discardableResult func select(_ container: Container, slot: Int) -> Tool? { return nil }
     }
 }
 
@@ -16,16 +16,19 @@ extension ToolboxViewModel {
         
         @Published var colorWedges: [Tool] = []
         
+        public var selectedTool: Tool? { return colorWedges.first(where: { $0.isSelected}) }
+
         @Published var selectedColor: Color = .black
         
         func selectColorHex(_ hex: String) {
             print("log0222 selectColorHex \(hex)")
             /// Find the color wedge
-            for (i, c) in colorWedges.enumerated() {
+            for (_, c) in colorWedges.enumerated() {
                 guard let colorHex = c.colorHex else { continue }
+                print("log0222 colorHex \(colorHex) - hex \(hex)")
                 if hex == colorHex {
                     /// Select it
-                    select(.colors, id: c.id)
+                    select(.colors, slot: c.slot)
                     return
                 }
             }
@@ -40,12 +43,12 @@ extension ToolboxViewModel {
         }
         
         @discardableResult
-        override func select(_ container: Container, id: String) -> Tool? {
+        override func select(_ container: Container, slot: Int) -> Tool? {
             
             var returningElement: Tool?
             var elements = colorWedges
             
-            guard let index = elements.firstIndex(where: { $0.id == id }) else { return nil }
+            guard let index = elements.firstIndex(where: { $0.slot == slot }) else { return nil }
             
             returningElement = elements[index]
             

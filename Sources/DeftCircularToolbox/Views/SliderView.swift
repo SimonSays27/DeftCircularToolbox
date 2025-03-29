@@ -5,7 +5,7 @@ struct CircularSlider: View {
     let startAngle: Angle
     let endAngle: Angle
     @Binding var percentage: Double
-    @Binding var selectedColor: Color
+    var selectedColor: Color
     
     var body: some View {
         GeometryReader { geometry in
@@ -34,7 +34,7 @@ struct CircularSlider: View {
                     .frame(width: 20, height: 20)
                     .position(knobPosition)
                     .gesture(
-                        DragGesture()
+                        DragGesture(minimumDistance: 0, coordinateSpace: .local)
                             .onChanged { value in
                                 
                                 var newAngle = angleFromPoint(center: CGPoint(x: radius, y: radius),
@@ -95,13 +95,13 @@ struct CircularSlider: View {
 
 struct CircularSliderCV: View {
     @State private var sliderValue: Double = 50
-    @State private var color: Color = .red
+    @State private var color: Color = .black
     
     var body: some View {
         CircularSlider(startAngle: .degrees(-80),
                        endAngle: .degrees(80),
                        percentage: $sliderValue,
-                       selectedColor: $color)
+                       selectedColor: color)
         .frame(width: 150, height: 150, alignment: .center)
     }
 }

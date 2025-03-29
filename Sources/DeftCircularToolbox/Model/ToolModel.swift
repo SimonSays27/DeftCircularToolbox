@@ -2,21 +2,27 @@ import SwiftUI
 import DeftCore
 
 public struct Tool: Identifiable, Hashable {
-    public init(id: String, kind: Kind, isAction: Bool = false, colorHex: String? = nil, isSelected: Bool = false, image: UIImage? = nil) {
-        self.id = id
+    
+    public init(kind: Kind) {
         self.kind = kind
-        self.isAction = isAction
-        self.colorHex = colorHex
-        self.isSelected = isSelected
-        self.image = image
     }
-    public let id: String
+    
+    /// Identifying
+    public var id: Int { slot }
+    public var propertyId: String?
+    public var slot: Int = 0
+    
+    /// Converting to PKTool
+    public var toolWidth: CGFloat = 5
+    public var writingToolKind: String = ""
+    public var colorHex: String? = nil
+
+    /// SwiftUI part
     let kind: Kind
-    var isAction: Bool
+    var isAction: Bool = false
     var color: Color { Color(uiColor: UIColor(hex: colorHex ?? "") ?? .black) }
-    var colorHex: String?
-    var isSelected: Bool
-    var image: UIImage?
+    var isSelected: Bool = false
+    public var image: UIImage? = nil
 }
 
 extension Tool {

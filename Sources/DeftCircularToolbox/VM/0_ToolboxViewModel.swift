@@ -15,89 +15,147 @@ public class ToolboxViewModel: ObservableObject {
     /* UI Colors */
     @Published public var deskColors: (d: UIColor, bg: UIColor, fg: UIColor) = (#colorLiteral(red: 0.8374180198, green: 0.8374378085, blue: 0.8374271393, alpha: 1), #colorLiteral(red: 0.1298420429, green: 0.1298461258, blue: 0.1298439503, alpha: 1), #colorLiteral(red: 0.9999960065, green: 1, blue: 1, alpha: 1))
     
-    /* Selection */
-    @Published var selectedTool: Tool?
-    @Published var selectedColor: Tool?
-    @Published var sliderPercentage: Double = 33
-    
     /* API */
-    public func load(toContainer: Container, loads: [Tool]) {
-        switch toContainer {
-        case .colors: colorHandler.colorWedges = loads
-        case .writingTools: toolHandler.writingTools = loads
-        case .mainTools: toolHandler.mainTools = loads
-        }
-        /// Select If Needed
-        guard let selected = loads.first(where: { $0.isSelected }) else { return }
-        self.select(of: toContainer, id: selected.id)
-    }
-    public func select(of container: Container, id: String, isUserSelection: Bool = false) {
+    public func updateLoad(_ container: Container, update: (inout [Tool]) -> Void) {
+        print("log0222 updateload called for \(container)")
+        var tools: [Tool]
+        /// Get
         switch container {
-        case .colors:
-            /// colorHandler.select(container, id: id)
-            /// Instead change the tools color if not the same
-            print("log0223 select of colors \(id)")
-            guard let willChangeToColor = colorHandler.colorWedges.first(where: { $0.id == id }) else { return }
-            /// Get the current tool
-            if let current = toolHandler.writingTools.first(where: { $0.isSelected }) {
-                /// update the color value
-                if current.colorHex != willChangeToColor.colorHex {
-                    delegate?.currentToolColorUpdated(withHex: willChangeToColor.colorHex ?? "")
+        case .colors: tools = colorHandler.colorWedges
+        case .writingTools: tools = toolHandler.writingTools
+        case .mainTools: tools = toolHandler.mainTools
+        }
+        /// Update
+        update(&tools)
+        /// Set back
+        switch container {
+        case .colors: colorHandler.colorWedges = tools
+        case .writingTools: toolHandler.writingTools = tools
+        case .mainTools: toolHandler.mainTools = tools
+        }
+    }
+    
+    public func selectTool(_ tool: Tool? = nil, slot: Int? = nil) {
+        let slot = tool?.slot ?? slot ?? toolHandler.selectedTool?.slot ?? 0
+        var selectedTool: Tool?
+        
+        /// If it's an action
+        if let tool = toolHandler.writingTools.first(where: { $0.slot == slot }) ??
+            toolHandler.mainTools.first(where: { $0.slot == slot }),
+           tool.isAction
+        {
+            /// it's action
+            print("log0225 it's action")
+            return
+        }
+        
+        /// Otherwise, update
+        for k in [Container.writingTools, .mainTools] {
+            updateLoad(k) { tools in
+                for (i, t) in tools.enumerated() {
+                    let willSelect = (t.slot == slot)
+                    tools[i].isSelected = willSelect
+                    if willSelect { selectedTool = tools[i] }
                 }
             }
-            break
-        default:
-            /// Select tool
-            toolHandler.select(container, id: id)
-            /// Select the tools color
-            if let selectedTool = toolHandler.writingTools.first(where: { $0.isSelected }),
-               let hex = selectedTool.colorHex
-            {
-                colorHandler.selectColorHex(hex)
+        }
+        
+        /// Set the color and shit
+        guard let selectedTool = selectedTool else { return }
+        let colorHex = selectedTool.colorHex ?? ""
+        colorHandler.selectColorHex(colorHex)
+        
+        /// Notify Delegate
+        delegate?.toolSelectionDidChange(to: selectedTool)
+    }
+    
+    func userDidTap(_ container: Container, slot: Int) {
+        print("log0225 userDidTap \(container) - \(slot)")
+        /// Loop update, Deselect other
+        switch container {
+        case .writingTools, .mainTools: selectTool(slot: slot)
+        case .colors:
+            guard var selectedTool = toolHandler.selectedTool else { return }
+            /// Update the color of the current tool
+            selectedTool.colorHex = colorHandler.colorWedges.first(where: { $0.slot == slot })?.colorHex
+            /// Select the current tool again
+            let writingContainer: Container = {
+                if toolHandler.writingTools.contains(where: { $0.slot == selectedTool.slot }) { return .writingTools }
+                return .mainTools
+            }()
+            print("log0225 will update \(writingContainer) - with \(selectedTool.slot) ")
+            updateLoad(writingContainer) { tool in
+                for i in tool.indices {
+                    if tool[i].slot == selectedTool.slot {
+                        tool[i] = selectedTool
+                    }
+                }
             }
+            /// Now select
+            selectTool(selectedTool)
+            /// Notify Delegate
+            delegate?.colorSelectionDidChange(of: selectedTool)
         }
-        /// Notify Delegate if needed
-        if isUserSelection {
-            delegate?.didSelect(container, id: id)
-        }
+
     }
     
     /* ALL TOOLs */
     @Published var tools: [Container: [Tool]] = [.writingTools: [], .mainTools: [], .colors: []]
     
+    /* Listeners */
+    private var cancellables: Set<AnyCancellable> = []
+    
     /* TOOLs */
     public var toolHandler = ToolsHandler()
-    private var writingToolsListener: AnyCancellable?
-    private var mainToolsListener: AnyCancellable?
     private func listenToToolsHandler() {
-        writingToolsListener = toolHandler.$writingTools
+        toolHandler.$writingTools
             .assign(to: \.tools[.writingTools]!, on: self)
-        mainToolsListener = toolHandler.$mainTools
+            .store(in: &cancellables)
+        toolHandler.$mainTools
             .assign(to: \.tools[.mainTools]!, on: self)
+            .store(in: &cancellables)
     }
     
     /* COLORs */
-    @Published var selectedColor: Color = .red
+    @Published var selectedColor: Color = .black
     public var colorHandler = ColorHandler()
-    private var selectedColorListener: AnyCancellable?
-    private var colorListener: AnyCancellable?
     private func listenToColorHandler() {
-        colorListener = colorHandler.$colorWedges
+        colorHandler.$colorWedges
             .assign(to: \.tools[.colors]!, on: self)
-        selectedColorListener = colorHandler.$selectedColor
+            .store(in: &cancellables)
+        colorHandler.$selectedColor
             .assign(to: \.selectedColor, on: self)
+            .store(in: &cancellables)
     }
     private let colorDebouncer = DDebouncer(delay: 0.1)
     public func userDidChangeColor(_ newColor: Color) {
         print("log0223 user did change color to ")
         colorDebouncer.debounce {
-            if let selectedSlot = self.colorHandler.colorWedges.firstIndex(where: { $0.isSelected }) {
-                print("log0223 selected color tool is \(selectedSlot)")
+            if let selectedColor = self.colorHandler.colorWedges.first(where: { $0.isSelected }) {
+                print("log0223 selected color tool is \(selectedColor.slot)")
                 let uiColor = UIColor(newColor)
-                self.delegate?.userDidChangeColor(slot: selectedSlot, withHex: uiColor.hexWithAlpha)
+                let hex = uiColor.hexWithAlpha
+                
+                /// UPDATE COLOR WEDGE
+                for (i, w) in self.colorHandler.colorWedges.enumerated() {
+                    if w.slot == selectedColor.slot {
+                        self.colorHandler.colorWedges[i].colorHex = hex; return
+                    }
+                }
+                
+                /// UPDATE SELECTED TOOL
+                guard var selectedTool = self.toolHandler.selectedTool else { return }
+                /// Update the color of the current tool
+                selectedTool.colorHex = hex
+                /// Notify
+                self.delegate?.toolSelectionDidChange(to: selectedTool)
+                
             }
         }
     }
+    
+    /* Color Picker Color */
+    @Published var colorPickerColor: Color = .black
     
     /* SLIDER */
     @Published var sliderPercentage: Double = 33
@@ -111,6 +169,11 @@ extension ToolboxViewModel {
     /* DragGesture call */
     func viewCenterDragged(_ val: DragGesture.Value, didEnd: Bool = false) {
         delegate?.viewCenterDragged(val, didEnd: didEnd)
+    }
+    
+    /* Should Show Color Picker */
+    func shouldShowColorPicker() {
+        delegate?.shouldShowColorPicker()
     }
     
 }

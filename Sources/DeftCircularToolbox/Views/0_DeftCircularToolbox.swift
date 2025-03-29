@@ -26,25 +26,27 @@ public struct DeftCircularToolboxView: View {
             /// Tools and Colors
             ForEach(kinds) { k in
                 
-                let sess: (startAngle: Angle, endAngle: Angle, innerRadius: CGFloat, outerRadius: CGFloat) = {
+                let sess: (startAngle: Angle,
+                           endAngle: Angle,
+                           innerRadius: CGFloat,
+                           outerRadius: CGFloat,
+                           toolsToLoad: [Tool]) = {
                     switch k {
                     case .colors:
-                        return (.degrees(-90), .degrees(90), 60, 150)
+                        return (.degrees(-90), .degrees(90), 60, 150, vm.tools[k] ?? [])
                     case .mainTools:
-                        return (.degrees(90), .degrees(270), 19, 100)
+                        return (.degrees(90), .degrees(270), 19, 100, vm.tools[k] ?? [])
                     case .writingTools:
-                        return (.degrees(90), .degrees(270), 50, 150)
+                        return (.degrees(90), .degrees(270), 50, 150, vm.tools[k]?.reversed() ?? [])
                     }
                 }()
-                
+                                
                 WedgeContainerView(vm: vm,
-                                   tools: vm.tools[k] ?? [],
+                                   tools: sess.toolsToLoad,
                                    startAngle: sess.startAngle,
                                    endAngle: sess.endAngle,
                                    innerRadius: sess.innerRadius,
-                                   action: { id in
-                    vm.select(of: k, id: id, isUserSelection: true)
-                })
+                                   action: { slot in vm.userDidTap(k, slot: slot) })
                 .frame(width: sess.outerRadius, height: sess.outerRadius)
                 .scaleEffect(formHidden ? 0.1 : 1.0)
                 
@@ -54,7 +56,7 @@ public struct DeftCircularToolboxView: View {
             CircularSlider(startAngle: .degrees(-70),
                            endAngle: .degrees(70),
                            percentage: $vm.sliderPercentage,
-                           selectedColor: $vm.selectedColor)
+                           selectedColor: vm.selectedColor)
                 .frame(width: sliderFrameSize, height: sliderFrameSize)
             
             /// Mid Circle
@@ -86,17 +88,26 @@ public struct DeftCircularToolboxView: View {
 #Preview {
     let vm = ToolboxViewModel(delegate: nil)
     DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-        vm.load(toContainer: .colors, loads:[
-            Tool(id: "color_1", kind: .color, colorHex: "5B7DB5"),
-            Tool(id: "color_2", kind: .color, colorHex: "6CA1D9"),
-            Tool(id: "color_3", kind: .color, colorHex: "E57373"),
-            Tool(id: "color_4", kind: .color, colorHex: "66B96F", isSelected: true),
-            Tool(id: "color_5", kind: .color, colorHex: "F8A546"),
-            Tool(id: "color_6", kind: .color, colorHex: "D1A3D7"),
-            Tool(id: "color_7", kind: .color, colorHex: "A66C42"),
-            Tool(id: "color_8", kind: .color, colorHex: "000000")
-        ])
-        vm.select(of: .writingTools, id: "tool_1")
+        vm.updateLoad(.colors) { currentColors in
+            currentColors = (0..<8).map { i in
+                var color = Tool(kind: .color)
+                color.colorHex = {
+                    switch i {
+                    case 0: return "000000"
+                    case 1: return "5B7DB5"
+                    case 2: return "6CA1D9"
+                    case 3: return "E57373"
+                    case 4: return "66B96F"
+                    case 5: return "F8A546"
+                    case 6: return "D1A3D7"
+                    case 7: return "A66C42"
+                    default: return ""
+                    }
+                }()
+                return color
+            }
+        }
+        vm.selectTool(slot: 2)
     }
     return DeftCircularToolboxView(vm: vm)
 }

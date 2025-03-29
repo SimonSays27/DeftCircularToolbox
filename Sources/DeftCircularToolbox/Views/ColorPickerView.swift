@@ -19,3 +19,14 @@ struct ColorPickerView: View {
     @Previewable @State var selectedColor: Color = .black
     ColorPickerView(selectedColor: $selectedColor)
 }
+
+extension View {
+    @ViewBuilder
+    func modifierIf<Content: View>(_ condition: Bool, transform: (Self) -> Content) -> some View {
+        if condition {
+            transform(self)
+        } else {
+            self
+        }
+    }
+}

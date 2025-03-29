@@ -2,13 +2,13 @@ import SwiftUI
 
 struct WedgeContainerView: View {
     
-    @State var vm: ToolboxViewModel
+    @StateObject var vm: ToolboxViewModel
 
     let tools: [Tool]
     let startAngle: Angle
     let endAngle: Angle
     let innerRadius: CGFloat
-    let action: (String) -> Void
+    let action: (Int) -> Void
     
     var deskColor: Color { Color(uiColor: vm.deskColors.d) }
     var bgColor: Color { Color(uiColor: vm.deskColors.bg) }
@@ -41,13 +41,26 @@ struct WedgeContainerView: View {
                         
                         if tool.isSelected {
 
-                            ColorPickerView(selectedColor: $vm.selectedColor)
+                            Circle()
+                                .fill(vm.selectedColor)
+                                .frame(width: 30, height: 30)
                                 .offset(x: toolCenter.x - geometry.size.width / 2,
                                         y: toolCenter.y - geometry.size.height / 2)
                                 .zIndex(99)
-                                .onChange(of: vm.selectedColor) { oldValue, newValue in
-                                    vm.userDidChangeColor(newValue)
+                                .onTapGesture {
+                                    vm.shouldShowColorPicker()
                                 }
+                            
+//                            ColorPickerView(selectedColor: $tempColor)
+//                                .modifierIf(UIScreen.main.scale == 3, transform: { view in
+//                                    view.scaleEffect(1.2)
+//                                })
+//                                .offset(x: toolCenter.x - geometry.size.width / 2,
+//                                        y: toolCenter.y - geometry.size.height / 2)
+//                                .zIndex(99)
+//                                .onChange(of: tempColor) { oldValue, newValue in
+//                                    vm.userDidChangeColor(newValue)
+//                                }
                             
                         } else {
                             WedgeShape(startAngle: angle1,
@@ -55,8 +68,8 @@ struct WedgeContainerView: View {
                                        innerRadius: innerRadius,
                                        outerRadius: outerRadius,
                                        strokeWidth: 0)
-                            .fill(tool.color ?? .black)
-                            .onTapGesture {
+                            .fill(tool.color)
+                            .onTapGesture(count: 1) {
                                 action(tool.id)
                             }
                         }
@@ -93,6 +106,7 @@ struct WedgeContainerView: View {
                                 .frame(width: 14, height: 14)
                                 .foregroundStyle(tool.isSelected ? bgColor : fgColor, tool.isSelected ? bgColor : fgColor)
                                 .position(toolCenter)
+                                .allowsHitTesting(false)
                         }
                         
                     }
