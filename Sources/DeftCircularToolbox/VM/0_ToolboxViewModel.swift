@@ -65,6 +65,9 @@ public class ToolboxViewModel: ObservableObject {
         let colorHex = selectedTool.colorHex ?? ""
         colorHandler.selectColorHex(colorHex)
         
+        /// Select the width
+        sliderPercentage = selectedTool.toolWidthPercentage ?? 0
+        
         /// Notify Delegate
         delegate?.toolSelectionDidChange(to: selectedTool)
     }

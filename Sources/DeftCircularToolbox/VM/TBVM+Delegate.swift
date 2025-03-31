@@ -1,6 +1,9 @@
 import SwiftUI
 
 public protocol ToolboxViewModelDelegate: AnyObject {
+    /// For view appeared
+    func toolboxDidAppear()
+    
     /// For Dragging action
     func viewCenterDragged(_ val: DragGesture.Value, didEnd: Bool)
     
@@ -11,5 +14,4 @@ public protocol ToolboxViewModelDelegate: AnyObject {
     
     /// User changed the selected color value
     func shouldShowColorPicker()
-    // func selectedColorDidUpdate(_ selectedColor: Tool, with hex: String)
 }

@@ -13,7 +13,7 @@ public struct Tool: Identifiable, Hashable {
     public var slot: Int = 0
     
     /// Converting to PKTool
-    public var toolWidth: CGFloat = 5
+    public var toolWidthPercentage: CGFloat?
     public var writingToolKind: String = ""
     public var colorHex: String? = nil
 

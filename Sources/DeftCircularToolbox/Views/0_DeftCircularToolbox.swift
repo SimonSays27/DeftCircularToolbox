@@ -56,7 +56,8 @@ public struct DeftCircularToolboxView: View {
             CircularSlider(startAngle: .degrees(-70),
                            endAngle: .degrees(70),
                            percentage: $vm.sliderPercentage,
-                           selectedColor: vm.selectedColor)
+                           selectedColor: vm.selectedColor,
+                           sliderOnEnd: { perc in vm.delegate?.sliderValueDidChange(perc) })
                 .frame(width: sliderFrameSize, height: sliderFrameSize)
             
             /// Mid Circle
@@ -80,6 +81,9 @@ public struct DeftCircularToolboxView: View {
                         })
                 )
             
+        }
+        .onAppear {
+            vm.delegate?.toolboxDidAppear()
         }
         
     }

@@ -6,6 +6,7 @@ struct CircularSlider: View {
     let endAngle: Angle
     @Binding var percentage: Double
     var selectedColor: Color
+    var sliderOnEnd: (Double) -> Void
     
     var body: some View {
         GeometryReader { geometry in
@@ -54,6 +55,7 @@ struct CircularSlider: View {
                             }
                             .onEnded({ val in
                                 //
+                                sliderOnEnd(percentage)
                             })
                     )
             }
@@ -101,7 +103,10 @@ struct CircularSliderCV: View {
         CircularSlider(startAngle: .degrees(-80),
                        endAngle: .degrees(80),
                        percentage: $sliderValue,
-                       selectedColor: color)
+                       selectedColor: color,
+                       sliderOnEnd: { val in
+            print("log0001 slider did end with \(val)")
+        })
         .frame(width: 150, height: 150, alignment: .center)
     }
 }
