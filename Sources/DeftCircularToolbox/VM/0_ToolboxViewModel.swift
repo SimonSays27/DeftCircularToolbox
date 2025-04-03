@@ -45,7 +45,8 @@ public class ToolboxViewModel: ObservableObject {
            tool.isAction
         {
             /// it's action
-            print("log0225 it's action")
+            print("log0225 it's action \(tool.slot)")
+            delegate?.userDidTapAction(tool)
             return
         }
         
