@@ -11,6 +11,7 @@ public protocol ToolboxViewModelDelegate: AnyObject {
     func userDidTapAction(_ actionTool: Tool)
     
     /// Selection Updates
+    func userDidTap(_ tool: Tool)
     func toolSelectionDidChange(to tool: Tool)
     func colorSelectionDidChange(of tool: Tool)
     func sliderValueDidChange(_ newValue: Double)

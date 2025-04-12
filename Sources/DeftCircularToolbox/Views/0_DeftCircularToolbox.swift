@@ -72,13 +72,16 @@ public struct DeftCircularToolboxView: View {
                     }
                 }
                 .gesture(
-                    DragGesture(minimumDistance: 0, coordinateSpace: .global)
-                        .onChanged { value in
-                            vm.viewCenterDragged(value)
-                        }
-                        .onEnded({ value in
-                            vm.viewCenterDragged(value, didEnd: true)
-                        })
+                    LongPressGesture(minimumDuration: 0.01, maximumDistance: 0)
+                        .sequenced(before:
+                                    DragGesture(minimumDistance: 0, coordinateSpace: .global)
+                            .onChanged { value in
+                                vm.viewCenterDragged(value)
+                            }
+                            .onEnded({ value in
+                                vm.viewCenterDragged(value, didEnd: true)
+                            }))
+
                 )
             
         }

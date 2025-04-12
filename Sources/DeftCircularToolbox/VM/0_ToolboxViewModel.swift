@@ -35,6 +35,11 @@ public class ToolboxViewModel: ObservableObject {
         }
     }
     
+    public func selectToolWithPropertyId(_ id: String) {
+        if let foundTool = toolHandler.writingTools.first(where: { $0.propertyId == id }) {
+            selectTool(slot: foundTool.slot)
+        }
+    }
     public func selectTool(_ tool: Tool? = nil, slot: Int? = nil) {
         let slot = tool?.slot ?? slot ?? toolHandler.selectedTool?.slot ?? 0
         var selectedTool: Tool?
@@ -75,9 +80,12 @@ public class ToolboxViewModel: ObservableObject {
     
     func userDidTap(_ container: Container, slot: Int) {
         print("log0225 userDidTap \(container) - \(slot)")
+        var tappedTool: Tool?
         /// Loop update, Deselect other
         switch container {
-        case .writingTools, .mainTools: selectTool(slot: slot)
+        case .writingTools, .mainTools:
+            selectTool(slot: slot)
+            tappedTool = toolHandler.selectedTool
         case .colors:
             guard var selectedTool = toolHandler.selectedTool else { return }
             /// Update the color of the current tool
@@ -99,6 +107,11 @@ public class ToolboxViewModel: ObservableObject {
             selectTool(selectedTool)
             /// Notify Delegate
             delegate?.colorSelectionDidChange(of: selectedTool)
+        }
+        
+        /// User did tap callback
+        if let tappedTool = tappedTool {
+            delegate?.userDidTap(tappedTool)
         }
 
     }

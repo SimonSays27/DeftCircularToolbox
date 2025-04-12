@@ -31,10 +31,10 @@ struct WedgeContainerView: View {
                     let angle2 = startAngle + Angle(degrees: angleStep * Double(index + 1))
                     
                     let toolCenter = calculateCenter(startAngle: angle1,
-                                                      endAngle: angle2,
-                                                      innerRadius: innerRadius,
-                                                      outerRadius: outerRadius,
-                                                      inFrame: CGRect(origin: .zero, size: geometry.size))
+                                                     endAngle: angle2,
+                                                     innerRadius: innerRadius,
+                                                     outerRadius: outerRadius,
+                                                     inFrame: CGRect(origin: .zero, size: geometry.size))
                     
                     
                     if tool.kind == .color {
@@ -103,7 +103,8 @@ struct WedgeContainerView: View {
                             Image(uiImage: img)
                                 .resizable()
                                 .scaledToFit()
-                                .frame(width: 14, height: 14)
+                                .frame(width: tool.slot > 50 ? 14 : 20, height: tool.slot > 50 ? 14 : 20)
+                                .rotationEffect(tool.slot > 50 ? Angle(degrees: 0) : (angle1 + angle2) / 2 + Angle(degrees: 90))
                                 .foregroundStyle(tool.isSelected ? bgColor : fgColor, tool.isSelected ? bgColor : fgColor)
                                 .position(toolCenter)
                                 .allowsHitTesting(false)
