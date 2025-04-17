@@ -16,12 +16,12 @@ public struct DeftCircularToolboxView: View {
         
         ZStack {
             
-            Circle()
-                .fill(Color.clear)
-                .strokeBorder(Color.black, lineWidth: 10) // Create the "blank" area in the middle
-                .frame(width: 148, height: 148)
-                .shadow(radius: 5)
-                .scaleEffect(formHidden ? 0.1 : 1.0)
+            // Circle()
+            //     .fill(Color.clear)
+            //     .strokeBorder(Color.black, lineWidth: 1) // Create the "blank" area in the middle
+            //     .frame(width: 148, height: 148)
+            //     .shadow(radius: 5)
+            //     .scaleEffect(formHidden ? 0.1 : 1.0)
             
             /// Tools and Colors
             ForEach(kinds) { k in
@@ -65,23 +65,26 @@ public struct DeftCircularToolboxView: View {
                 .fill(Color(uiColor: vm.deskColors.bg))
                 .frame(width: 36, height: 36)
                 .shadow(radius: 3)
-                .onTapGesture {
-                    let animation: Animation = formHidden ? .easeOut(duration: 0.2) : .easeIn(duration: 0.2)
-                    withAnimation(animation) {
-                        formHidden.toggle()
-                    }
-                }
                 .gesture(
-                    LongPressGesture(minimumDuration: 0.01, maximumDistance: 0)
-                        .sequenced(before:
-                                    DragGesture(minimumDistance: 0, coordinateSpace: .global)
-                            .onChanged { value in
+                    DragGesture(minimumDistance: 0, coordinateSpace: .global)
+                        .onChanged { value in
+                            let dragDistance = hypot(value.translation.width, value.translation.height)
+                            if dragDistance > 5 {
                                 vm.viewCenterDragged(value)
                             }
-                            .onEnded({ value in
+                        }
+                        .onEnded { value in
+                            let dragDistance = hypot(value.translation.width, value.translation.height)
+                            if dragDistance < 6 {
+                                // Treat it as a tap
+                                let animation: Animation = formHidden ? .easeOut(duration: 0.2) : .easeIn(duration: 0.2)
+                                withAnimation(animation) {
+                                    formHidden.toggle()
+                                }
+                            } else {
                                 vm.viewCenterDragged(value, didEnd: true)
-                            }))
-
+                            }
+                        }
                 )
             
         }
