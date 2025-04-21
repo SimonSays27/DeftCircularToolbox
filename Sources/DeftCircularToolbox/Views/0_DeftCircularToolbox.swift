@@ -7,7 +7,7 @@ public struct DeftCircularToolboxView: View {
     }
     
     @ObservedObject var vm: ToolboxViewModel
-    @State var formHidden: Bool = false
+    @State public var formHidden: Bool = false
     @State var sliderFrameSize: CGFloat = 80
     
     let kinds: [ToolboxViewModel.Container] = [.writingTools, .mainTools, .colors]
@@ -15,13 +15,6 @@ public struct DeftCircularToolboxView: View {
     public var body: some View {
         
         ZStack {
-            
-            // Circle()
-            //     .fill(Color.clear)
-            //     .strokeBorder(Color.black, lineWidth: 1) // Create the "blank" area in the middle
-            //     .frame(width: 148, height: 148)
-            //     .shadow(radius: 5)
-            //     .scaleEffect(formHidden ? 0.1 : 1.0)
             
             /// Tools and Colors
             ForEach(kinds) { k in
@@ -59,6 +52,7 @@ public struct DeftCircularToolboxView: View {
                            selectedColor: vm.selectedColor,
                            sliderOnEnd: { perc in vm.delegate?.sliderValueDidChange(perc) })
                 .frame(width: sliderFrameSize, height: sliderFrameSize)
+                .rotationEffect(formHidden ? .radians(vm.activeRotation - .pi / 2) : .zero)
             
             /// Mid Circle
             Circle()
@@ -80,6 +74,7 @@ public struct DeftCircularToolboxView: View {
                                 let animation: Animation = formHidden ? .easeOut(duration: 0.2) : .easeIn(duration: 0.2)
                                 withAnimation(animation) {
                                     formHidden.toggle()
+                                    vm.formHidden = formHidden
                                 }
                             } else {
                                 vm.viewCenterDragged(value, didEnd: true)

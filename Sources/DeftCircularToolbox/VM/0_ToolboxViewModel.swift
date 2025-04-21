@@ -177,6 +177,10 @@ public class ToolboxViewModel: ObservableObject {
     /* SLIDER */
     @Published var sliderPercentage: Double = 33
     
+    /* Rotation */
+    @Published public var activeRotation: CGFloat = 0
+    @Published public var formHidden: Bool = false
+    
 }
 
 
