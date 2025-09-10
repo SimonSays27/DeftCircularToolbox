@@ -16,6 +16,10 @@ public struct DeftCircularToolboxView: View {
         
         ZStack {
             
+            /// Show Slider
+            let showSlider: Bool = shouldShowSlider()
+            let kinds = kinds.filter({ showSlider || $0 != .colors }) // Hide Colors and Sliders
+            
             /// Tools and Colors
             ForEach(kinds) { k in
                 
@@ -46,47 +50,79 @@ public struct DeftCircularToolboxView: View {
             }
             
             /// Slider
-            CircularSlider(startAngle: .degrees(-70),
-                           endAngle: .degrees(70),
-                           percentage: $vm.sliderPercentage,
-                           selectedColor: vm.selectedColor,
-                           sliderOnEnd: { perc in vm.delegate?.sliderValueDidChange(perc) })
-                .frame(width: sliderFrameSize, height: sliderFrameSize)
-                .rotationEffect(formHidden ? .radians(vm.activeRotation - .pi / 2) : .zero)
+            if showSlider {
+                CircularSlider(startAngle: .degrees(-70),
+                               endAngle: .degrees(70),
+                               percentage: $vm.sliderPercentage,
+                               selectedColor: vm.selectedColor,
+                               sliderOnEnd: { perc in vm.delegate?.sliderValueDidChange(perc) })
+                    .frame(width: sliderFrameSize, height: sliderFrameSize)
+                    .rotationEffect(formHidden ? .radians(vm.activeRotation - .pi / 2) : .zero)
+            }
             
             /// Mid Circle
-            Circle()
-                .fill(Color(uiColor: vm.deskColors.bg))
-                .frame(width: 36, height: 36)
-                .shadow(radius: 3)
-                .gesture(
-                    DragGesture(minimumDistance: 0, coordinateSpace: .global)
-                        .onChanged { value in
-                            let dragDistance = hypot(value.translation.width, value.translation.height)
-                            if dragDistance > 5 {
-                                vm.viewCenterDragged(value)
-                            }
-                        }
-                        .onEnded { value in
-                            let dragDistance = hypot(value.translation.width, value.translation.height)
-                            if dragDistance < 6 {
-                                // Treat it as a tap
-                                let animation: Animation = formHidden ? .easeOut(duration: 0.2) : .easeIn(duration: 0.2)
-                                withAnimation(animation) {
-                                    formHidden.toggle()
-                                    vm.formHidden = formHidden
-                                }
-                            } else {
-                                vm.viewCenterDragged(value, didEnd: true)
-                            }
-                        }
-                )
+            MidCircleView(vm: vm, formHidden: $formHidden)
             
         }
         .onAppear {
             vm.delegate?.toolboxDidAppear()
         }
         
+    }
+    
+    private func shouldShowSlider() -> Bool {
+        print("log0700 shouldShowSlider \(vm.toolHandler.selectedTool?.writingToolKind)")
+        switch vm.toolHandler.selectedTool?.writingToolKind {
+        case "": return false
+        default: return true
+        }
+    }
+    
+}
+
+struct MidCircleView: View {
+    
+    @ObservedObject var vm: ToolboxViewModel
+    @Binding var formHidden: Bool
+    
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(Color(uiColor: vm.deskColors.bg))
+                .frame(width: 36, height: 36)
+                .shadow(radius: 3)
+            
+            /// Image
+            if let img = vm.toolHandler.selectedTool?.image {
+                Image(uiImage: img)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 16, height: 16)
+            }
+        }
+        .frame(width: 36, height: 36)
+        .gesture(
+            DragGesture(minimumDistance: 0, coordinateSpace: .global)
+                .onChanged { value in
+                    let dragDistance = hypot(value.translation.width, value.translation.height)
+                    if dragDistance > 5 {
+                        vm.viewCenterDragged(value)
+                    }
+                }
+                .onEnded { value in
+                    let dragDistance = hypot(value.translation.width, value.translation.height)
+                    if dragDistance < 6 {
+                        // Treat it as a tap
+                        let animation: Animation = formHidden ? .easeOut(duration: 0.2) : .easeIn(duration: 0.2)
+                        withAnimation(animation) {
+                            formHidden.toggle()
+                            vm.formHidden = formHidden
+                        }
+                    } else {
+                        vm.viewCenterDragged(value, didEnd: true)
+                    }
+                }
+        )
     }
 }
 
