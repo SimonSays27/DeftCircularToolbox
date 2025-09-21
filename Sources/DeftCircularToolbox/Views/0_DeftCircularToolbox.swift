@@ -7,7 +7,6 @@ public struct DeftCircularToolboxView: View {
     }
     
     @ObservedObject var vm: ToolboxViewModel
-    @State public var formHidden: Bool = false
     @State var sliderFrameSize: CGFloat = 80
     
     let kinds: [ToolboxViewModel.Container] = [.writingTools, .mainTools, .colors]
@@ -45,7 +44,7 @@ public struct DeftCircularToolboxView: View {
                                    innerRadius: sess.innerRadius,
                                    action: { slot in vm.userDidTap(k, slot: slot) })
                 .frame(width: sess.outerRadius, height: sess.outerRadius)
-                .scaleEffect(formHidden ? 0.1 : 1.0)
+                .scaleEffect(vm.formHidden ? 0.1 : 1.0)
                 
             }
             
@@ -57,11 +56,11 @@ public struct DeftCircularToolboxView: View {
                                selectedColor: vm.selectedColor,
                                sliderOnEnd: { perc in vm.delegate?.sliderValueDidChange(perc) })
                     .frame(width: sliderFrameSize, height: sliderFrameSize)
-                    .rotationEffect(formHidden ? .radians(vm.activeRotation - .pi / 2) : .zero)
+                    .rotationEffect(vm.formHidden ? .radians(vm.activeRotation - .pi / 2) : .zero)
             }
             
             /// Mid Circle
-            MidCircleView(vm: vm, formHidden: $formHidden)
+            MidCircleView(vm: vm)
             
         }
         .onAppear {
@@ -83,7 +82,6 @@ public struct DeftCircularToolboxView: View {
 struct MidCircleView: View {
     
     @ObservedObject var vm: ToolboxViewModel
-    @Binding var formHidden: Bool
     
     var body: some View {
         ZStack {
@@ -112,11 +110,10 @@ struct MidCircleView: View {
                 .onEnded { value in
                     let dragDistance = hypot(value.translation.width, value.translation.height)
                     if dragDistance < 6 {
-                        // Treat it as a tap
-                        let animation: Animation = formHidden ? .easeOut(duration: 0.2) : .easeIn(duration: 0.2)
+                        let formIt = !vm.formHidden
+                        let animation: Animation = vm.formHidden ? .easeOut(duration: 0.2) : .easeIn(duration: 0.2)
                         withAnimation(animation) {
-                            formHidden.toggle()
-                            vm.formHidden = formHidden
+                            vm.setForm(hidden: formIt)
                         }
                     } else {
                         vm.viewCenterDragged(value, didEnd: true)
