@@ -180,8 +180,12 @@ public class ToolboxViewModel: ObservableObject {
     /* Rotation */
     @Published public var activeRotation: CGFloat = 0
     @Published @MainActor public var formHidden: Bool = false
-    @MainActor public func setForm(hidden: Bool) {
-        formHidden = hidden
+    @MainActor public func setForm(hidden: Bool? = nil, opposite: Bool = false) {
+        if opposite {
+            formHidden = !formHidden
+        } else if let hidden = hidden {
+            formHidden = hidden
+        }
     }
     
 }
