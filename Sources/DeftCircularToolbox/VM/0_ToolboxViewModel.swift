@@ -147,7 +147,8 @@ public class ToolboxViewModel: ObservableObject {
     private let colorDebouncer = DDebouncer(delay: 0.1)
     public func userDidChangeColor(_ newColor: Color) {
         print("log0223 user did change color to ")
-        colorDebouncer.debounce {
+        colorDebouncer.debounce { [weak self] in
+            guard let self else { return }
             if let selectedColor = self.colorHandler.colorWedges.first(where: { $0.isSelected }) {
                 print("log0223 selected color tool is \(selectedColor.slot)")
                 let uiColor = UIColor(newColor)
