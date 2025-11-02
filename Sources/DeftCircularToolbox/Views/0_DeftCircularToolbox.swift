@@ -63,6 +63,7 @@ public struct DeftCircularToolboxView: View {
             MidCircleView(vm: vm)
             
         }
+        .foregroundStyle(Color(vm.deskColors.fg))
         .onAppear {
             vm.delegate?.toolboxDidAppear()
         }
@@ -87,7 +88,7 @@ struct MidCircleView: View {
         ZStack {
             Circle()
                 .fill(Color(uiColor: vm.deskColors.bg))
-                .frame(width: 36, height: 36)
+                .frame(width: 44, height: 44)
                 .shadow(radius: 3)
             
             /// Image
@@ -95,10 +96,10 @@ struct MidCircleView: View {
                 Image(uiImage: img)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
-                    .frame(width: 16, height: 16)
+                    .frame(width: 22, height: 22)
             }
         }
-        .frame(width: 36, height: 36)
+        .frame(width: 44, height: 44)
         .gesture(
             DragGesture(minimumDistance: 0, coordinateSpace: .global)
                 .onChanged { value in
