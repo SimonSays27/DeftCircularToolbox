@@ -1,4 +1,5 @@
 import SwiftUI
+import Combine
 
 public protocol ToolboxViewModelDelegate: AnyObject {
     /// For view appeared
@@ -18,4 +19,9 @@ public protocol ToolboxViewModelDelegate: AnyObject {
     
     /// User changed the selected color value
     func shouldShowColorPicker()
+    
+    /// Eraser Option
+    var eraserMode: Tool.EraserMode? { get }
+    var eraserModePublisher: AnyPublisher<Tool.EraserMode, Never>? { get }
+    func userWantsEraserMode(_ em: Tool.EraserMode)
 }

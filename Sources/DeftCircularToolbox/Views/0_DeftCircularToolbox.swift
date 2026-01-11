@@ -16,11 +16,16 @@ public struct DeftCircularToolboxView: View {
         ZStack {
             
             /// Show Slider
-            let showSlider: Bool = shouldShowSlider()
-            let kinds = kinds.filter({ showSlider || $0 != .colors }) // Hide Colors and Sliders
+            let sliderMode: SliderMode = shouldShowSlider()
+            let showKinds: [ToolboxViewModel.Container] = {
+                switch sliderMode {
+                case .closed, .eraser: return kinds.filter({ $0 != .colors })
+                case .open: return kinds
+                }
+            }()
             
             /// Tools and Colors
-            ForEach(kinds) { k in
+            ForEach(showKinds) { k in
                 
                 let sess: (startAngle: Angle,
                            endAngle: Angle,
@@ -49,7 +54,7 @@ public struct DeftCircularToolboxView: View {
             }
             
             /// Slider
-            if showSlider {
+            if case .open = sliderMode {
                 CircularSlider(startAngle: .degrees(-70),
                                endAngle: .degrees(70),
                                percentage: $vm.sliderPercentage,
@@ -57,6 +62,11 @@ public struct DeftCircularToolboxView: View {
                                sliderOnEnd: { perc in vm.delegate?.sliderValueDidChange(perc) })
                     .frame(width: sliderFrameSize, height: sliderFrameSize)
                     .rotationEffect(vm.formHidden ? .radians(vm.activeRotation - .pi / 2) : .zero)
+            }
+            
+            /// Eraser Options
+            if case .eraser = sliderMode {
+                EraserSelectionView(vm: vm)
             }
             
             /// Mid Circle
@@ -70,11 +80,20 @@ public struct DeftCircularToolboxView: View {
         
     }
     
-    private func shouldShowSlider() -> Bool {
-        print("log0700 shouldShowSlider \(vm.toolHandler.selectedTool?.writingToolKind)")
-        switch vm.toolHandler.selectedTool?.writingToolKind {
-        case "": return false
-        default: return true
+    public enum SliderMode {
+        case closed
+        case open
+        case eraser
+    }
+    
+    private func shouldShowSlider() -> SliderMode {
+        switch (vm.toolHandler.selectedTool?.slot ?? 0) {
+        case 102:
+            return .eraser
+        case 99...200:
+            return .closed
+        default:
+            return .open
         }
     }
     

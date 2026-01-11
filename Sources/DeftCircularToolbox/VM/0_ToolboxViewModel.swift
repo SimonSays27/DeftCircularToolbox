@@ -10,6 +10,7 @@ public class ToolboxViewModel: ObservableObject {
         self.delegate = delegate
         listenToColorHandler()
         listenToToolsHandler()
+        listenToEraserMode()
     }
     
     /* UI Colors */
@@ -75,6 +76,7 @@ public class ToolboxViewModel: ObservableObject {
         sliderPercentage = selectedTool.toolWidthPercentage ?? 0
         
         /// Notify Delegate
+        print("log0941- selectTool Called")
         delegate?.toolSelectionDidChange(to: selectedTool)
     }
     
@@ -131,6 +133,26 @@ public class ToolboxViewModel: ObservableObject {
         toolHandler.$mainTools
             .assign(to: \.tools[.mainTools]!, on: self)
             .store(in: &cancellables)
+    }
+    
+    /* Eraser Mode */
+    @Published public var eraserMode: Tool.EraserMode = .object
+    private func listenToEraserMode() {
+        guard let del = delegate else { return }
+        /// Set initial value
+        if let em = del.eraserMode {
+            eraserMode = em
+        }
+        /// Set Publisher
+        guard let publisher = del.eraserModePublisher else { return }
+        publisher.sink { [weak self] em in
+            guard let self else { return }
+            self.eraserMode = em
+        }
+        .store(in: &cancellables)
+    }
+    public func userWantsEraserMode(_ em: Tool.EraserMode) {
+        delegate?.userWantsEraserMode(em)
     }
     
     /* COLORs */

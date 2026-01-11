@@ -23,11 +23,19 @@ public struct Tool: Identifiable, Hashable {
     var color: Color { Color(uiColor: UIColor(hex: colorHex ?? "") ?? .black) }
     var isSelected: Bool = false
     public var image: UIImage? = nil
+    
 }
 
 extension Tool {
     public enum Kind {
         case tool
         case color
+    }
+}
+
+extension Tool {
+    public enum EraserMode: String {
+        case pixel
+        case object
     }
 }
