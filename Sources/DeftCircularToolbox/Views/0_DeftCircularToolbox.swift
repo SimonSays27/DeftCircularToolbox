@@ -19,9 +19,12 @@ public struct DeftCircularToolboxView: View {
             let sliderMode: SliderMode = shouldShowSlider()
             let showKinds: [ToolboxViewModel.Container] = {
                 switch sliderMode {
-                case .closed, .eraser: return kinds.filter({ $0 != .colors })
-                case .open: return kinds
+                case .closed, .eraser:
+                    guard !vm.forceShowColors else { break }
+                    return kinds.filter({ $0 != .colors })
+                case .open: break
                 }
+                return kinds
             }()
             
             /// Tools and Colors

@@ -84,9 +84,19 @@ public class ToolboxViewModel: ObservableObject {
         var tappedTool: Tool?
         /// Loop update, Deselect other
         switch container {
-        case .writingTools, .mainTools:
+        case .mainTools:
+            /// remove any colors because ie selection tool doesn't have a color
+            updateLoad(.mainTools) { tools in
+                for i in tools.indices {
+                    tools[i].colorHex = nil
+                }
+            }
+            fallthrough /// same as writing tool
+            
+        case .writingTools:
             selectTool(slot: slot)
             tappedTool = toolHandler.selectedTool
+            
         case .colors:
             guard var selectedTool = toolHandler.selectedTool else { return }
             /// Update the color of the current tool
@@ -208,6 +218,12 @@ public class ToolboxViewModel: ObservableObject {
         } else if let hidden = hidden {
             formHidden = hidden
         }
+    }
+    
+    /* Force Show Colors when user selected a handwriting */
+    @Published public var forceShowColors: Bool = true
+    public func setForceShowColors(_ forceShowColors: Bool) {
+        self.forceShowColors = forceShowColors
     }
     
 }
