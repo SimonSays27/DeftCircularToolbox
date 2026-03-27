@@ -225,6 +225,13 @@ public class ToolboxViewModel: ObservableObject {
     public func setForceShowColors(_ forceShowColors: Bool) {
         self.forceShowColors = forceShowColors
     }
+    public func clearSelectionToolColor() {
+        updateLoad(.colors) { tools in
+            for i in tools.indices {
+                tools[i].isSelected = false
+            }
+        }
+    }
     
 }
 
