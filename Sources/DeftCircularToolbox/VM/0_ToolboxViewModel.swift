@@ -72,7 +72,7 @@ public class ToolboxViewModel: ObservableObject {
         colorHandler.selectColorHex(colorHex)
         
         /// Select the width
-        sliderPercentage = selectedTool.toolWidthPercentage ?? 0
+        sliderPercentage = selectedTool.toolWidthPercentage ?? 50
         
         /// Notify Delegate
         print("log0941- selectTool Called")

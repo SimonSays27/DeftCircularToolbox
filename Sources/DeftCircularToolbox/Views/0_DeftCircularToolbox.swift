@@ -90,6 +90,9 @@ public struct DeftCircularToolboxView: View {
     }
     
     private func shouldShowSlider() -> SliderMode {
+        /// `forceShowColors == true` means a handwriting selected
+        if vm.forceShowColors { return .open }
+        /// Regular
         switch (vm.toolHandler.selectedTool?.slot ?? 0) {
         case 102:
             return .eraser
